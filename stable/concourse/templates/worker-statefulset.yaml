@@ -10,29 +10,21 @@ metadata:
 spec:
   serviceName: {{ template "worker.fullname" . }}
   replicas: {{ .Values.worker.replicas }}
+  affinity:
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          labelSelector:
+            matchExpressions:
+            - key: app
+              operator: In
+              values:
+              - "{{ template "worker.fullname" . }}"
+          topologyKey: kubernetes.io/hostname
   template:
     metadata:
       labels:
         app: {{ template "worker.fullname" . }}
-      annotations:
-        scheduler.alpha.kubernetes.io/affinity: >
-          {
-            "podAntiAffinity": {
-              "preferredDuringSchedulingIgnoredDuringExecution": [
-                {
-                  "weight": 100,
-                  "labelSelector": {
-                    "matchExpressions": [{
-                      "key": "app",
-                      "operator": "In",
-                      "values": ["{{ template "worker.fullname" . }}"]
-                    }]
-                  },
-                  "topologyKey": "kubernetes.io/hostname"
-                }
-              ]
-            }
-          }
     spec:
       terminationGracePeriodSeconds: 60
       containers:
